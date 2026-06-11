@@ -20,7 +20,9 @@ export default function RoundOverlay({ title, word, scores, countdown }: Props) 
           {scores.map((s, i) => (
             <div key={i} className={styles.scRow}>
               <span>{RANK[i] ?? `${i + 1}th`} &nbsp; {s.name}</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}>{s.score}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontVariantNumeric: 'tabular-nums' }}>
+                {s.score > 0 ? `+${s.score}` : '—'}
+              </span>
             </div>
           ))}
         </div>

@@ -119,6 +119,7 @@ export default function ScribbleGame() {
   const hintStepsRef = useRef<string[]>([]);
   const hintTimesRef = useRef<number[]>([]);
   const hintIdxRef = useRef(0);
+  const roundGainsRef = useRef<Record<string, number>>({});
 
   // ── Input refs ───────────────────────────────────────────────────────────
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -164,10 +165,15 @@ export default function ScribbleGame() {
       : 0;
     if (drawerPts > 0 && playersRef.current[drawerId]) {
       playersRef.current[drawerId].score += drawerPts;
+      roundGainsRef.current[drawerId] = (roundGainsRef.current[drawerId] ?? 0) + drawerPts;
     }
     const scores = Object.values(playersRef.current)
       .map(p => ({ name: p.name, score: p.score }))
       .sort((a, b) => b.score - a.score);
+    const roundGains = Object.values(playersRef.current)
+      .map(p => ({ name: p.name, score: roundGainsRef.current[p.id] ?? 0 }))
+      .sort((a, b) => b.score - a.score);
+    showOverlay(hostWordRef.current, roundGains, false);
     chRef.current?.publish('end_round', { word: hostWordRef.current, scores, drawerBonus: { id: drawerId, pts: drawerPts } });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -269,6 +275,7 @@ export default function ScribbleGame() {
     if (wordPickerIvRef.current) { clearInterval(wordPickerIvRef.current); wordPickerIvRef.current = null; }
     roundOverRef.current = false;
     guessedSetRef.current = new Set();
+    roundGainsRef.current = {};
     currentDrawerRef.current = d.drawerId;
     const isMine = d.drawerId === myIdRef.current;
     isMyTurnToDrawRef.current = isMine;
@@ -437,6 +444,7 @@ export default function ScribbleGame() {
     if (t === 'correct') {
       addChat(`🎉 ${d.name} guessed it!`, 'correct');
       if (playersRef.current[d.id]) playersRef.current[d.id].score += d.pts;
+      roundGainsRef.current[d.id] = (roundGainsRef.current[d.id] ?? 0) + d.pts;
       guessedSetRef.current.add(d.id);
       refreshGamePlayers();
       if (d.id === myIdRef.current) setGuessDisabled(true);
@@ -446,8 +454,12 @@ export default function ScribbleGame() {
     if (t === 'end_round') {
       if (!isMyTurnToDrawRef.current && d.drawerBonus?.pts > 0 && playersRef.current[d.drawerBonus.id]) {
         playersRef.current[d.drawerBonus.id].score += d.drawerBonus.pts;
+        roundGainsRef.current[d.drawerBonus.id] = (roundGainsRef.current[d.drawerBonus.id] ?? 0) + d.drawerBonus.pts;
       }
-      showOverlay(d.word, d.scores, false);
+      const roundGains = Object.values(playersRef.current)
+        .map(p => ({ name: p.name, score: roundGainsRef.current[p.id] ?? 0 }))
+        .sort((a, b) => b.score - a.score);
+      showOverlay(d.word, roundGains, false);
       if (amHostRef.current) setTimeout(() => hostNextRound(), 6000);
     }
     if (t === 'game_over') showOverlay('', d.scores, true);
