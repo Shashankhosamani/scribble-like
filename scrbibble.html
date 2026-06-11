@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribble!</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#1a1a2e;color:#eee;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#lobby,#waiting-screen,#game-screen{width:100%;max-width:1100px;padding:10px}
+#waiting-screen,#game-screen{display:none}
+.card{background:#16213e;border-radius:16px;padding:32px;max-width:460px;margin:auto;box-shadow:0 8px 32px #0005}
+.logo{font-size:2.4rem;font-weight:900;color:#e94560;text-align:center;margin-bottom:4px;letter-spacing:2px}
+.sub{text-align:center;color:#aaa;margin-bottom:24px;font-size:.9rem}
+input[type=text]{width:100%;padding:10px 14px;border-radius:8px;border:2px solid #2a2a5a;background:#0f3460;color:#fff;font-size:1rem;margin-bottom:12px;outline:none;transition:border .2s}
+input[type=text]:focus{border-color:#e94560}
+.btn{width:100%;padding:11px;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:8px}
+.btn-red{background:#e94560;color:#fff}.btn-red:hover{background:#c73652}
+.btn-blue{background:#0f3460;color:#fff;border:2px solid #2a2a5a}.btn-blue:hover{background:#1a4a80}
+.or{text-align:center;color:#555;margin:6px 0;font-size:.85rem}
+#status-msg{text-align:center;color:#e94560;font-size:.85rem;margin-top:8px;min-height:20px}
+#room-code-box{font-size:2rem;font-weight:900;letter-spacing:8px;color:#fff;background:#0f3460;padding:14px 28px;border-radius:12px;margin:10px 0;cursor:pointer;display:inline-block}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.topic-btn{background:#0f3460;border:2px solid #2a2a5a;border-radius:10px;color:#fff;padding:10px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .15s;text-align:center}
+.topic-btn:hover,.topic-btn.sel{background:#e94560;border-color:#e94560}
+.players-waiting{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.pw-pill{background:#0f3460;border-radius:8px;padding:6px 14px;font-size:.9rem}
+#start-btn{background:#e94560;border:none;border-radius:10px;color:#fff;padding:12px 32px;font-size:1.1rem;font-weight:700;cursor:pointer;margin-top:12px}
+#start-btn:disabled{opacity:.4;cursor:default}
+#game-screen{display:none;flex-direction:row;gap:10px;align-items:flex-start}
+.lp{width:160px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.cp{flex:1;display:flex;flex-direction:column;gap:8px}
+.rp{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.panel{background:#16213e;border-radius:12px;padding:10px}
+#word-display{text-align:center;font-size:1.5rem;font-weight:700;letter-spacing:6px;color:#e94560;min-height:36px;padding:6px 0}
+#hint-bar{text-align:center;font-size:.8rem;color:#aaa;margin-top:2px}
+#timer-wrap{background:#0f3460;border-radius:8px;height:8px;overflow:hidden;margin-top:4px}
+#timer-bar{height:100%;background:#e94560;transition:width 1s linear;width:100%}
+#timer-txt{text-align:center;font-size:.85rem;color:#aaa;margin-top:2px}
+#canvas-wrap{position:relative;border-radius:10px;overflow:hidden;background:#fff;line-height:0}
+canvas{display:block;width:100%;border-radius:10px;cursor:crosshair}
+#canvas-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:#555;pointer-events:none;border-radius:10px}
+.tool-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.color-swatch{width:26px;height:26px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex-shrink:0}
+.color-swatch.active{border-color:#e94560}
+.sz-btn,.tool-btn{background:#0f3460;border:none;border-radius:6px;color:#fff;padding:4px 8px;cursor:pointer;font-size:.8rem}
+.sz-btn.active,.tool-btn.active{background:#e94560}
+#players-list{display:flex;flex-direction:column;gap:6px}
+.p-row{display:flex;justify-content:space-between;align-items:center;background:#0f3460;border-radius:8px;padding:6px 10px;font-size:.85rem}
+.p-row.drawing{border-left:3px solid #e94560}
+.p-score{color:#e94560;font-weight:700}
+#chat-box{height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;padding:4px}
+.msg{font-size:.82rem;padding:3px 6px;border-radius:6px;word-break:break-word}
+.msg.correct{background:#1a5a1a;color:#7fff7f;font-weight:700}
+.msg.system{color:#888;font-style:italic}
+.msg.chat{color:#ddd}
+#guess-row{display:flex;gap:6px;margin-top:6px}
+#guess-row input{flex:1;padding:7px 10px;border-radius:8px;border:2px solid #2a2a5a;background:#0f3460;color:#fff;font-size:.9rem;outline:none}
+#guess-row button{background:#e94560;border:none;border-radius:8px;color:#fff;padding:7px 12px;cursor:pointer;font-weight:700}
+#overlay{display:none;position:fixed;inset:0;background:#000a;z-index:100;align-items:center;justify-content:center}
+.ov-card{background:#16213e;border-radius:16px;padding:28px;min-width:300px;text-align:center}
+.ov-card h2{color:#e94560;font-size:1.5rem;margin-bottom:8px}
+.ov-word{font-size:1.1rem;color:#aaa;margin-bottom:12px}
+.sc-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #2a2a5a;font-size:.9rem}
+#ov-countdown{color:#aaa;font-size:.85rem;margin-top:12px}
+@media(max-width:700px){
+  #game-screen{flex-direction:column}
+  .lp,.rp{width:100%}
+  #chat-box{height:160px}
+}
+</style>
+</head>
+<body>
+
+<div id="lobby">
+  <div class="card">
+    <div class="logo">✏️ Scribble!</div>
+    <div class="sub">Draw. Guess. Win.</div>
+    <input id="inp-name" type="text" placeholder="Your name" maxlength="20">
+    <button class="btn btn-red" id="btn-create">Create Room</button>
+    <div class="or">— or join existing —</div>
+    <input id="inp-room" type="text" placeholder="Room code (e.g. ABC123)" maxlength="8" style="text-transform:uppercase">
+    <button class="btn btn-blue" id="btn-join">Join Room</button>
+    <div id="status-msg"></div>
+  </div>
+</div>
+
+<div id="waiting-screen">
+  <div class="card" style="max-width:520px;text-align:center">
+    <div class="logo">✏️ Scribble!</div>
+    <p style="color:#aaa;margin:8px 0">Share this code with friends:</p>
+    <div id="room-code-box">----</div>
+    <p style="font-size:.75rem;color:#555;margin-bottom:8px">Click to copy</p>
+    <div id="players-waiting-list" class="players-waiting"></div>
+    <div id="host-section" style="display:none">
+      <p style="color:#aaa;font-size:.9rem">Pick a topic:</p>
+      <div class="topic-grid" id="topic-grid">
+        <button class="topic-btn sel" data-t="vanilla">🎲 Vanilla</button>
+        <button class="topic-btn" data-t="animals">🐾 Animals</button>
+        <button class="topic-btn" data-t="food">🍕 Food</button>
+        <button class="topic-btn" data-t="sports">⚽ Sports</button>
+        <button class="topic-btn" data-t="space">🚀 Space</button>
+      </div>
+      <button id="start-btn" disabled>Start Game</button>
+      <p id="start-hint" style="color:#aaa;font-size:.8rem;margin-top:6px">Need at least 2 players</p>
+    </div>
+    <div id="guest-section" style="display:none;color:#aaa;margin-top:12px">Waiting for host to start…</div>
+  </div>
+</div>
+
+<div id="game-screen">
+  <div class="lp">
+    <div class="panel">
+      <div id="round-info" style="font-size:.85rem;color:#aaa;text-align:center;margin-bottom:4px">Round 1</div>
+      <div id="timer-wrap"><div id="timer-bar"></div></div>
+      <div id="timer-txt">90s</div>
+    </div>
+    <div class="panel">
+      <div style="font-size:.75rem;color:#aaa;font-weight:700;margin-bottom:6px">PLAYERS</div>
+      <div id="players-list"></div>
+    </div>
+  </div>
+  <div class="cp">
+    <div class="panel" style="padding:6px 10px">
+      <div id="word-display">_ _ _ _</div>
+      <div id="hint-bar"></div>
+    </div>
+    <div class="panel" style="padding:6px">
+      <div id="canvas-wrap">
+        <canvas id="canvas" width="700" height="440"></canvas>
+        <div id="canvas-overlay"></div>
+      </div>
+    </div>
+    <div class="panel" id="tools-panel">
+      <div class="tool-row" id="color-row"></div>
+      <div class="tool-row" style="margin-top:6px">
+        <button class="sz-btn active" data-s="4">S</button>
+        <button class="sz-btn" data-s="10">M</button>
+        <button class="sz-btn" data-s="20">L</button>
+        <button class="sz-btn" data-s="36">XL</button>
+        <button class="tool-btn" id="eraser-btn">⌫ Eraser</button>
+        <button class="tool-btn" id="clear-btn">🗑 Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="rp">
+    <div class="panel" style="display:flex;flex-direction:column">
+      <div style="font-size:.75rem;color:#aaa;font-weight:700;margin-bottom:4px">CHAT & GUESSES</div>
+      <div id="chat-box"></div>
+      <div id="guess-row">
+        <input id="guess-input" type="text" placeholder="Type your guess…" maxlength="60">
+        <button id="guess-btn">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="ov-card">
+    <h2 id="ov-title">Round Over!</h2>
+    <div class="ov-word" id="ov-word"></div>
+    <div id="ov-scores"></div>
+    <div id="ov-countdown"></div>
+  </div>
+</div>
+
+<script>
+const ABLY_KEY   = "UjnnTg.KNgjJA:EUHHuL1WoOc7J9RoZmuzG_Or6wLUd3b5LqMAqbyztHg";
+const ROUND_TIME = 90;
+const TOTAL_ROUNDS = 3;
+const COLORS = ["#000000","#e94560","#ff9f43","#f9ca24","#6ab04c","#22a6b3","#4834d4","#be2edd","#ffffff","#aaaaaa","#795548","#ff6b81"];
+const WORDS = {
+  vanilla:["house","apple","tree","car","sun","moon","book","fish","bird","door","chair","hat","shoe","cup","star","boat","clock","flower","key","phone","pizza","cat","dog","bicycle","cloud","bridge","mountain","umbrella","guitar","robot"],
+  animals:["elephant","giraffe","penguin","dolphin","kangaroo","cheetah","octopus","flamingo","hedgehog","peacock","crocodile","butterfly","gorilla","seahorse","platypus","chameleon","narwhal","axolotl","meerkat","capybara","zebra","panda","parrot","walrus","leopard"],
+  food:   ["sushi","taco","pizza","burger","noodles","croissant","spaghetti","dumpling","waffle","pretzel","nachos","burrito","cheesecake","ramen","samosa","hotdog","pancake","avocado","baguette","donut","milkshake","curry","paella","fondue","crepe"],
+  sports: ["surfing","archery","gymnastics","fencing","polo","bobsled","curling","skateboarding","wrestling","volleyball","badminton","rowing","javelin","trampoline","handball","lacrosse","squash","kayaking","triathlon","snooker","darts","rugby","cricket","skiing","diving"],
+  space:  ["asteroid","blackhole","nebula","comet","galaxy","telescope","astronaut","satellite","supernova","wormhole","crater","eclipse","rocket","solarsystem","constellation","meteorite","spacestation","mars","orbit","launchpad","moonlanding","gravity","cosmos","lightyear","exoplanet"]
+};
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let ably, ch;
+let myId, myName, roomCode, amHost=false;
+let players={}, topic="vanilla";
+let playerOrder=[], turnIdx=0, roundNum=0;
+let currentDrawer=null, hostWord="", isMyTurnToDraw=false;
+let guessedSet=new Set(), timerIv=null, timeLeft=0, roundOver=false;
+
+// ── CANVAS ────────────────────────────────────────────────────────────────
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+ctx.lineCap="round"; ctx.lineJoin="round";
+let painting=false, lx=0, ly=0, color="#000000", size=4, erasing=false;
+let drawBuf=[], flushIv=null;
+
+function resetCanvas(broadcast){
+  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(broadcast) ch.publish("clear",{});
+}
+function pos(e){
+  const r=canvas.getBoundingClientRect();
+  const sx=canvas.width/r.width, sy=canvas.height/r.height;
+  const src=e.touches?e.touches[0]:e;
+  return{x:(src.clientX-r.left)*sx, y:(src.clientY-r.top)*sy};
+}
+canvas.addEventListener("mousedown",e=>{if(!isMyTurnToDraw)return;painting=true;const p=pos(e);lx=p.x;ly=p.y;});
+canvas.addEventListener("mousemove",e=>{
+  if(!painting||!isMyTurnToDraw)return;
+  const p=pos(e),c=erasing?"#ffffff":color,s=erasing?size*3:size;
+  localLine(lx,ly,p.x,p.y,c,s); drawBuf.push({x1:lx,y1:ly,x2:p.x,y2:p.y,c,s}); lx=p.x;ly=p.y;
+});
+canvas.addEventListener("mouseup",()=>painting=false);
+canvas.addEventListener("mouseleave",()=>painting=false);
+canvas.addEventListener("touchstart",e=>{if(!isMyTurnToDraw)return;painting=true;const p=pos(e);lx=p.x;ly=p.y;},{passive:true});
+canvas.addEventListener("touchmove",e=>{
+  if(!painting||!isMyTurnToDraw)return; e.preventDefault();
+  const p=pos(e),c=erasing?"#ffffff":color,s=erasing?size*3:size;
+  localLine(lx,ly,p.x,p.y,c,s); drawBuf.push({x1:lx,y1:ly,x2:p.x,y2:p.y,c,s}); lx=p.x;ly=p.y;
+},{passive:false});
+canvas.addEventListener("touchend",()=>painting=false);
+
+function localLine(x1,y1,x2,y2,c,s){
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+  ctx.strokeStyle=c;ctx.lineWidth=s;ctx.stroke();
+}
+function flushDraw(){if(!drawBuf.length)return;ch.publish("draw",{lines:drawBuf});drawBuf=[];}
+
+// ── BUILD UI ──────────────────────────────────────────────────────────────
+(()=>{
+  const row=document.getElementById("color-row");
+  COLORS.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="color-swatch"+(c==="#000000"?" active":"");
+    b.style.background=c;
+    b.onclick=()=>{color=c;erasing=false;document.querySelectorAll(".color-swatch").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById("eraser-btn").classList.remove("active");};
+    row.appendChild(b);
+  });
+  document.querySelectorAll(".sz-btn").forEach(b=>b.onclick=()=>{
+    size=+b.dataset.s;erasing=false;
+    document.querySelectorAll(".sz-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+    document.getElementById("eraser-btn").classList.remove("active");
+  });
+  document.getElementById("eraser-btn").onclick=()=>{erasing=!erasing;document.getElementById("eraser-btn").classList.toggle("active",erasing);};
+  document.getElementById("clear-btn").onclick=()=>{if(isMyTurnToDraw)resetCanvas(true);};
+  document.getElementById("topic-grid").addEventListener("click",e=>{
+    const btn=e.target.closest(".topic-btn"); if(!btn)return;
+    document.querySelectorAll(".topic-btn").forEach(b=>b.classList.remove("sel"));
+    btn.classList.add("sel"); topic=btn.dataset.t;
+    ch&&ch.publish("topic_change",{topic});
+  });
+  document.getElementById("btn-create").onclick=createRoom;
+  document.getElementById("btn-join").onclick=joinRoom;
+  document.getElementById("start-btn").onclick=startGame;
+  document.getElementById("guess-btn").onclick=sendGuess;
+  document.getElementById("guess-input").addEventListener("keydown",e=>{if(e.key==="Enter")sendGuess();});
+  document.getElementById("room-code-box").onclick=()=>{
+    navigator.clipboard.writeText(roomCode).catch(()=>{});
+    const el=document.getElementById("room-code-box"),prev=el.textContent;
+    el.textContent="Copied!"; setTimeout(()=>el.textContent=prev,1000);
+  };
+})();
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function setStatus(m){document.getElementById("status-msg").textContent=m;}
+function genId(){return"p_"+Date.now()+"_"+Math.random().toString(36).slice(2,6);}
+function genCode(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+function addChat(text,type){
+  const box=document.getElementById("chat-box"),m=document.createElement("div");
+  m.className="msg "+type; m.textContent=text; box.appendChild(m); box.scrollTop=box.scrollHeight;
+}
+function renderWaitingPlayers(){
+  document.getElementById("players-waiting-list").innerHTML=
+    Object.values(players).map(p=>`<div class="pw-pill">${p.name}${p.host?" 👑":""}</div>`).join("");
+  const n=Object.keys(players).length;
+  const sb=document.getElementById("start-btn");
+  if(sb){sb.disabled=n<2;document.getElementById("start-hint").textContent=n<2?"Need at least 2 players":`${n} players ready!`;}
+}
+function renderPlayers(){
+  const sorted=Object.values(players).sort((a,b)=>b.score-a.score);
+  document.getElementById("players-list").innerHTML=sorted.map(p=>
+    `<div class="p-row ${p.id===currentDrawer?"drawing":""}">
+      <span>${p.id===currentDrawer?"✏️ ":""}${p.name}${p.host?" 👑":""}</span>
+      <span class="p-score">${p.score}</span></div>`).join("");
+}
+
+// ── ABLY ──────────────────────────────────────────────────────────────────
+function loadAbly(){
+  return new Promise((res,rej)=>{
+    if(window.Ably){res();return;}
+    const s=document.createElement("script");
+    s.src="https://cdn.ably.com/lib/ably.min-2.js";
+    s.onload=res; s.onerror=()=>rej(new Error("Failed to load Ably SDK"));
+    document.head.appendChild(s);
+  });
+}
+
+async function initAbly(id){
+  await loadAbly();
+  ably=new Ably.Realtime({key:ABLY_KEY, clientId:id});
+  return new Promise((res,rej)=>{
+    ably.connection.on("connected",res);
+    ably.connection.on("failed",()=>rej(new Error("Ably connection failed")));
+  });
+}
+
+// ── LOBBY ─────────────────────────────────────────────────────────────────
+async function createRoom(){
+  myName=document.getElementById("inp-name").value.trim()||"Host";
+  myId=genId(); amHost=true; roomCode=genCode();
+  setStatus("Connecting…");
+  document.getElementById("btn-create").disabled=true;
+  try{
+    await initAbly(myId);
+    ch=ably.channels.get("scribble3_"+roomCode);
+    ch.subscribe(onMsg);
+    players[myId]={id:myId,name:myName,host:true,score:0};
+    ch.publish("join",{id:myId,name:myName,host:true,score:0});
+    showWaiting();
+    setStatus("");
+  }catch(err){
+    setStatus("Error: "+err.message);
+    document.getElementById("btn-create").disabled=false;
+  }
+}
+
+async function joinRoom(){
+  myName=document.getElementById("inp-name").value.trim()||"Guest";
+  myId=genId(); amHost=false;
+  roomCode=document.getElementById("inp-room").value.trim().toUpperCase();
+  if(!roomCode){setStatus("Enter a room code!");return;}
+  setStatus("Connecting…");
+  document.getElementById("btn-join").disabled=true;
+  try{
+    await initAbly(myId);
+    ch=ably.channels.get("scribble3_"+roomCode);
+    ch.subscribe(onMsg);
+    players[myId]={id:myId,name:myName,host:false,score:0};
+    showWaiting();
+    ch.publish("join",{id:myId,name:myName,host:false,score:0});
+    setTimeout(()=>ch.publish("req_state",{from:myId}),400);
+    setStatus("");
+  }catch(err){
+    setStatus("Error: "+err.message);
+    document.getElementById("btn-join").disabled=false;
+  }
+}
+
+function showWaiting(){
+  document.getElementById("lobby").style.display="none";
+  document.getElementById("waiting-screen").style.display="flex";
+  document.getElementById("room-code-box").textContent=roomCode;
+  document.getElementById("host-section").style.display=amHost?"block":"none";
+  document.getElementById("guest-section").style.display=amHost?"none":"block";
+  renderWaitingPlayers();
+}
+
+// ── MESSAGES ──────────────────────────────────────────────────────────────
+function onMsg(msg){
+  const{name:t,data:d}=msg;
+
+  if(t==="join"){
+    if(!players[d.id]){players[d.id]={id:d.id,name:d.name,host:d.host,score:d.score||0};addChat(`${d.name} joined!`,"system");}
+    renderWaitingPlayers();
+    if(amHost) ch.publish("state",{players:Object.values(players),topic,phase:"waiting"});
+  }
+  if(t==="state"&&d.phase==="waiting"){
+    d.players.forEach(p=>{if(!players[p.id])players[p.id]=p;});
+    topic=d.topic||"vanilla";
+    renderWaitingPlayers();
+    document.querySelectorAll(".topic-btn").forEach(b=>b.classList.toggle("sel",b.dataset.t===topic));
+  }
+  if(t==="req_state"&&amHost){
+    ch.publish("state",{players:Object.values(players),topic,phase:"waiting"});
+  }
+  if(t==="topic_change"){
+    topic=d.topic;
+    document.querySelectorAll(".topic-btn").forEach(b=>b.classList.toggle("sel",b.dataset.t===topic));
+  }
+  if(t==="begin_game"){
+    playerOrder=d.order; topic=d.topic;
+    Object.values(players).forEach(p=>p.score=0);
+    turnIdx=0; roundNum=0;
+    document.getElementById("waiting-screen").style.display="none";
+    document.getElementById("game-screen").style.display="flex";
+    resetCanvas(false);
+    if(amHost) hostNextRound();
+  }
+  if(t==="begin_round") startRound(d);
+  if(t==="draw") d.lines.forEach(l=>localLine(l.x1,l.y1,l.x2,l.y2,l.c,l.s));
+  if(t==="clear"){ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);}
+  if(t==="guess"&&amHost) validateGuess(d);
+  if(t==="chat_msg") addChat(`${d.name}: ${d.text}`,"chat");
+  if(t==="correct"){
+    addChat(`🎉 ${d.name} guessed it! (+${d.pts}pts)`,"correct");
+    if(players[d.id]) players[d.id].score+=d.pts;
+    guessedSet.add(d.id); renderPlayers();
+    if(d.id===myId) document.getElementById("guess-input").disabled=true;
+    if(amHost) checkAllGuessed();
+  }
+  if(t==="end_round") showOverlay(d.word,d.scores,false);
+  if(t==="game_over") showOverlay("",d.scores,true);
+}
+
+// ── GAME ──────────────────────────────────────────────────────────────────
+function startGame(){ch.publish("begin_game",{order:Object.keys(players),topic});}
+
+function hostNextRound(){
+  if(roundNum>=TOTAL_ROUNDS*playerOrder.length){
+    const scores=Object.values(players).map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score);
+    ch.publish("game_over",{scores}); return;
+  }
+  const drawerId=playerOrder[turnIdx%playerOrder.length]; turnIdx++; roundNum++;
+  const pool=WORDS[topic]||WORDS.vanilla;
+  const word=pool[Math.floor(Math.random()*pool.length)];
+  const hint=Array.from(word).map(c=>c===" "?" ":"_").join(" ");
+  hostWord=word;
+  ch.publish("begin_round",{drawerId,word,hint,round:roundNum});
+}
+
+function startRound(d){
+  roundOver=false; guessedSet=new Set();
+  currentDrawer=d.drawerId; isMyTurnToDraw=d.drawerId===myId;
+  hostWord=(amHost||isMyTurnToDraw)?d.word:"";
+  resetCanvas(false); renderPlayers();
+  document.getElementById("round-info").textContent=`Round ${d.round}`;
+  document.getElementById("tools-panel").style.opacity=isMyTurnToDraw?"1":"0.4";
+  document.getElementById("tools-panel").style.pointerEvents=isMyTurnToDraw?"auto":"none";
+  document.getElementById("guess-input").disabled=isMyTurnToDraw;
+  document.getElementById("canvas-overlay").textContent="";
+  canvas.style.cursor=isMyTurnToDraw?"crosshair":"default";
+  if(isMyTurnToDraw){
+    document.getElementById("word-display").textContent=d.word;
+    document.getElementById("hint-bar").textContent=`Draw this! (${d.word.length} letters)`;
+    if(flushIv) clearInterval(flushIv);
+    flushIv=setInterval(flushDraw,80);
+  }else{
+    document.getElementById("word-display").textContent=d.hint;
+    document.getElementById("hint-bar").textContent=`${players[d.drawerId]?.name||"?"} is drawing…`;
+    if(flushIv){clearInterval(flushIv);flushIv=null;}
+  }
+  addChat(`─── Round ${d.round}: ${players[d.drawerId]?.name||"?"} is drawing! ───`,"system");
+  startTimer(ROUND_TIME);
+}
+
+function startTimer(secs){
+  if(timerIv) clearInterval(timerIv);
+  timeLeft=secs;
+  document.getElementById("timer-bar").style.width="100%";
+  document.getElementById("timer-txt").textContent=secs+"s";
+  timerIv=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timer-bar").style.width=`${Math.max(0,(timeLeft/secs)*100)}%`;
+    document.getElementById("timer-txt").textContent=timeLeft+"s";
+    if(timeLeft<=0){clearInterval(timerIv);if(amHost&&!roundOver)endRound();}
+  },1000);
+}
+
+function sendGuess(){
+  const inp=document.getElementById("guess-input"),txt=inp.value.trim(); if(!txt)return;
+  inp.value="";
+  if(isMyTurnToDraw){addChat("You are drawing!","system");return;}
+  if(guessedSet.has(myId)){addChat("Already guessed correctly!","system");return;}
+  ch.publish("guess",{id:myId,name:myName,text:txt});
+  addChat(`You: ${txt}`,"chat");
+}
+
+function validateGuess(d){
+  if(guessedSet.has(d.id))return;
+  if(d.text.trim().toLowerCase()===hostWord.toLowerCase()){
+    const pts=Math.max(10,Math.round((timeLeft/ROUND_TIME)*100));
+    if(players[d.id]) players[d.id].score+=pts;
+    guessedSet.add(d.id);
+    ch.publish("correct",{id:d.id,name:d.name,pts});
+    checkAllGuessed();
+  }else{
+    ch.publish("chat_msg",{name:d.name,text:d.text});
+  }
+}
+
+function checkAllGuessed(){
+  const nd=playerOrder.filter(id=>id!==currentDrawer);
+  if(nd.length&&nd.every(id=>guessedSet.has(id))) endRound();
+}
+
+function endRound(){
+  if(roundOver)return; roundOver=true;
+  clearInterval(timerIv);
+  if(flushIv){clearInterval(flushIv);flushIv=null;}
+  const scores=Object.values(players).map(p=>({name:p.name,score:p.score})).sort((a,b)=>b.score-a.score);
+  ch.publish("end_round",{word:hostWord,scores});
+  setTimeout(()=>hostNextRound(),6000);
+}
+
+function showOverlay(word,scores,isGameOver){
+  clearInterval(timerIv);
+  document.getElementById("ov-title").textContent=isGameOver?"🏆 Game Over!":"Round Over!";
+  document.getElementById("ov-word").textContent=isGameOver?`Winner: ${scores[0]?.name||"?"}`:(word?`The word was: "${word}"`:"");
+  document.getElementById("ov-scores").innerHTML=scores.map((s,i)=>
+    `<div class="sc-row"><span>${["🥇","🥈","🥉"][i]||""} ${s.name}</span><span>${s.score} pts</span></div>`).join("");
+  document.getElementById("overlay").style.display="flex";
+  if(!isGameOver){
+    let c=5; const cd=document.getElementById("ov-countdown"); cd.textContent=`Next round in ${c}s…`;
+    const iv=setInterval(()=>{c--;cd.textContent=`Next round in ${c}s…`;if(c<=0){clearInterval(iv);document.getElementById("overlay").style.display="none";}},1000);
+  }else{
+    document.getElementById("ov-countdown").textContent="Thanks for playing!";
+  }
+}
+</script>
+</body>
+</html>
