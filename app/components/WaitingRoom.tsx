@@ -1,5 +1,6 @@
 import type { Player } from '../types';
 import { TOPICS } from '../lib/constants';
+import ScribbleLogo from './ScribbleLogo';
 import styles from './ScribbleGame.module.css';
 
 interface Props {
@@ -34,7 +35,7 @@ export default function WaitingRoom({
   return (
     <div className={styles.waiting}>
       <div className={styles.card} style={{ maxWidth: 520, textAlign: 'center' }}>
-        <div className={styles.logo}>Scribble</div>
+        <ScribbleLogo />
         <p className={styles.mutedText}>Share this code with friends:</p>
         <div className={styles.roomCodeBox} onClick={onCopyCode}>
           {codeCopied ? 'Copied!' : roomCode}

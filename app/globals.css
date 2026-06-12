@@ -1,65 +1,173 @@
-@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap");
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 
 :root {
-  --font-sans: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
 
-  --royal-blue:     #01187D;
-  --royal-blue-700: #1C3A8E;
-  --blue-50:        #EAF0FE;
-  --blue-100:       #CCD5FE;
-  --blue-400:       #345FC1;
-  --sea-green:      #6ABAED;
+/* ══════════════════════════════════════════════════════════
+   CRAYON THEME (default) — warm cream, red accent, pill btns
+   ══════════════════════════════════════════════════════════ */
+:root,
+[data-theme="crayon"] {
+  --t-page-bg:    #FFFBF0;
+  --t-card-bg:    #FFFFFF;
+  --t-sidebar-bg: #FFF8F0;
+  --t-input-bg:   #FFF8F5;
 
-  --success:        #16A249;
-  --success-bg:     #EBFEF8;
-  --success-ink:    #036C4B;
-  --danger:         #DC2828;
-  --danger-bg:      #FCEDED;
-  --warning:        #F59F0A;
-  --warning-bg:     #FEF7EB;
-  --info:           #2463EB;
-  --info-bg:        #ECF1FD;
+  --t-border:     #FFD0D0;
+  --t-border-dim: rgba(255,107,107,0.15);
 
-  --ink-900: #12172B;
-  --ink-700: #3E4553;
-  --ink-500: #6C727F;
-  --ink-400: #99A1AF;
-  --ink-300: #D0D5DD;
-  --ink-200: #DDDFE4;
-  --ink-100: #EDEFF3;
-  --ink-50:  #F9FAFB;
+  --t-radius:     18px;
+  --t-btn-radius: 9999px;
+  --t-inp-radius: 12px;
+  --t-ovl-radius: 24px;
 
-  --bg:         #FCFCFD;
-  --bg-surface: #FFFFFF;
-  --bg-muted:   #F9FAFB;
-  --bg-input:   #F6F6F6;
-  --bg-ghost:   #EBECEC;
-  --border:     #DDDFE4;
-  --border-muted: #EDEFF3;
+  --t-shadow-sm:  0 2px 10px rgba(255,100,100,0.09);
+  --t-shadow-md:  0 4px 20px rgba(255,100,100,0.12);
+  --t-shadow-lg:  0 8px 40px rgba(255,100,100,0.18);
 
-  --shadow-xs: 0 1px 2px -1px rgba(0,0,0,0.08), 0 1px 3px 0 rgba(0,0,0,0.06);
-  --shadow-sm: 0 2px 4px 0 rgba(0,0,0,0.08), 0 4px 6px 0 rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px -2px rgba(0,0,0,0.08), 0 8px 24px -4px rgba(0,0,0,0.08);
-  --shadow-lg: 0 25px 50px -12px rgba(0,0,0,0.25);
+  --t-text-1: #1F1F2E;
+  --t-text-2: #6B7280;
+  --t-text-3: #9CA3AF;
 
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --t-accent:        #FF4B4B;
+  --t-accent-hover:  #E53E3E;
+  --t-accent-fg:     #FFFFFF;
+  --t-accent-sub:    rgba(255,75,75,0.10);
+  --t-accent-border: rgba(255,75,75,0.30);
 
-  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur: 180ms;
+  --t-good:       #22C55E;
+  --t-good-bg:    #DCFCE7;
+  --t-good-text:  #166534;
+  --t-good-bdr:   #86EFAC;
+  --t-warn-bg:    #FEF9C3;
+  --t-warn-text:  #854D0E;
+  --t-warn-bdr:   #FDE047;
+  --t-bad:        #EF4444;
+
+  --t-timer-bar:  linear-gradient(90deg, #FFD93D, #FF4B4B);
+  --t-word-color: #B45309;
+
+  --t-logo-c0: #FF6B6B; --t-logo-c1: #FDCB6E; --t-logo-c2: #00CEC9;
+  --t-logo-c3: #6C5CE7; --t-logo-c4: #FD79A8; --t-logo-c5: #0984E3;
+  --t-logo-c6: #E17055; --t-logo-c7: #FF4B4B; --t-logo-c8: #A78BFA;
+
+  --t-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-dur: 160ms;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CHALK THEME — dark chalkboard, gold accent
+   ══════════════════════════════════════════════════════════ */
+[data-theme="chalk"] {
+  --t-page-bg:    #1C2B1E;
+  --t-card-bg:    #243028;
+  --t-sidebar-bg: #1F2A22;
+  --t-input-bg:   #1A2620;
+
+  --t-border:     #3A4E3C;
+  --t-border-dim: rgba(240,208,128,0.12);
+
+  --t-radius:     10px;
+  --t-btn-radius: 8px;
+  --t-inp-radius: 8px;
+  --t-ovl-radius: 14px;
+
+  --t-shadow-sm:  0 2px 8px rgba(0,0,0,0.35);
+  --t-shadow-md:  0 4px 20px rgba(0,0,0,0.45);
+  --t-shadow-lg:  0 8px 40px rgba(0,0,0,0.55);
+
+  --t-text-1: #F0EDE8;
+  --t-text-2: #9BB09E;
+  --t-text-3: #6A8070;
+
+  --t-accent:        #F0D080;
+  --t-accent-hover:  #FFE090;
+  --t-accent-fg:     #1C2B1E;
+  --t-accent-sub:    rgba(240,208,128,0.12);
+  --t-accent-border: rgba(240,208,128,0.35);
+
+  --t-good:       #80F0A0;
+  --t-good-bg:    rgba(128,240,160,0.12);
+  --t-good-text:  #80F0A0;
+  --t-good-bdr:   rgba(128,240,160,0.30);
+  --t-warn-bg:    rgba(240,208,128,0.12);
+  --t-warn-text:  #F0D080;
+  --t-warn-bdr:   rgba(240,208,128,0.30);
+  --t-bad:        #F08090;
+
+  --t-timer-bar:  linear-gradient(90deg, #80F0A0, #F0D080);
+  --t-word-color: #F0D080;
+
+  --t-logo-c0: #F0D080; --t-logo-c1: #F08090; --t-logo-c2: #80C0F0;
+  --t-logo-c3: #C890F0; --t-logo-c4: #80F0A0; --t-logo-c5: #F0A060;
+  --t-logo-c6: #60E0C0; --t-logo-c7: #F0B0D0; --t-logo-c8: #F0D080;
+
+  --t-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-dur: 150ms;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ARCADE THEME — deep navy, purple neon
+   ══════════════════════════════════════════════════════════ */
+[data-theme="arcade"] {
+  --t-page-bg:    #0A0E2A;
+  --t-card-bg:    #111840;
+  --t-sidebar-bg: #0D1235;
+  --t-input-bg:   #0D1235;
+
+  --t-border:     #1E1A60;
+  --t-border-dim: rgba(124,58,237,0.22);
+
+  --t-radius:     14px;
+  --t-btn-radius: 10px;
+  --t-inp-radius: 10px;
+  --t-ovl-radius: 18px;
+
+  --t-shadow-sm:  0 2px 8px rgba(124,58,237,0.18);
+  --t-shadow-md:  0 4px 20px rgba(124,58,237,0.22);
+  --t-shadow-lg:  0 8px 40px rgba(124,58,237,0.28);
+
+  --t-text-1: #E8EAF6;
+  --t-text-2: #8892B0;
+  --t-text-3: #586080;
+
+  --t-accent:        #7C3AED;
+  --t-accent-hover:  #6D28D9;
+  --t-accent-fg:     #FFFFFF;
+  --t-accent-sub:    rgba(124,58,237,0.15);
+  --t-accent-border: rgba(124,58,237,0.40);
+
+  --t-good:       #10B981;
+  --t-good-bg:    rgba(16,185,129,0.12);
+  --t-good-text:  #34D399;
+  --t-good-bdr:   rgba(16,185,129,0.30);
+  --t-warn-bg:    rgba(251,191,36,0.12);
+  --t-warn-text:  #FBBF24;
+  --t-warn-bdr:   rgba(251,191,36,0.30);
+  --t-bad:        #F87171;
+
+  --t-timer-bar:  linear-gradient(90deg, #10B981, #7C3AED);
+  --t-word-color: #C4B5FD;
+
+  --t-logo-c0: #A78BFA; --t-logo-c1: #34D399; --t-logo-c2: #F472B6;
+  --t-logo-c3: #FBBF24; --t-logo-c4: #60A5FA; --t-logo-c5: #F87171;
+  --t-logo-c6: #38BDF8; --t-logo-c7: #A3E635; --t-logo-c8: #A78BFA;
+
+  --t-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-dur: 150ms;
 }
 
 body {
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 20px;
-  color: var(--ink-900);
-  background: var(--bg);
+  color: var(--t-text-1);
+  background: var(--t-page-bg);
   -webkit-font-smoothing: antialiased;
+  transition: background var(--t-dur) ease, color var(--t-dur) ease;
 }

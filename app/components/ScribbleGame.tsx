@@ -6,11 +6,13 @@ import { ABLY_KEY, ROUND_TIME, TOTAL_ROUNDS, WORDS } from '../lib/constants';
 import { fetchWordPool } from '../lib/datamuse';
 import { genId, genCode } from '../lib/utils';
 import { useCanvas } from '../hooks/useCanvas';
+import { useTheme } from '../hooks/useTheme';
 import Lobby from './Lobby';
 import WaitingRoom from './WaitingRoom';
 import GameScreen from './GameScreen';
 import RoundOverlay from './RoundOverlay';
 import WordPickerOverlay from './WordPickerOverlay';
+import ThemePicker from './ThemePicker';
 import type { Player, DrawLine, ChatMessage, ScoreRow, Phase } from '../types';
 import styles from './ScribbleGame.module.css';
 
@@ -42,6 +44,8 @@ function computeHints(word: string, numHints: number, roundTime: number) {
 }
 
 export default function ScribbleGame() {
+  useTheme(); // applies saved theme on mount
+
   // ── Screen ───────────────────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>('lobby');
   const [statusMsg, setStatusMsg] = useState('');
@@ -722,6 +726,8 @@ export default function ScribbleGame() {
           countdown={overlayCountdown}
         />
       )}
+
+      <ThemePicker />
     </div>
   );
 }

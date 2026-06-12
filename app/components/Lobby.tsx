@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import ScribbleLogo from './ScribbleLogo';
 import styles from './ScribbleGame.module.css';
 
 interface Props {
@@ -13,7 +14,7 @@ export default function Lobby({ nameInputRef, roomInputRef, statusMsg, onCreateR
   return (
     <div className={styles.lobby}>
       <div className={styles.card}>
-        <div className={styles.logo}>Scribble</div>
+        <ScribbleLogo />
         <div className={styles.sub}>Draw. Guess. Win.</div>
         <input ref={nameInputRef} className={styles.input} type="text" placeholder="Your name" maxLength={20} />
         <button className={`${styles.btn} ${styles.btnRed}`} onClick={onCreateRoom}>Create Room</button>
